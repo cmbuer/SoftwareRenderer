@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7EBA50A-BE36-4053-A3FD-7CF9E2E9F223}"
+	ProjectSection(SolutionItems) = preProject
+		imgui\imconfig.h = imgui\imconfig.h
+		imgui\imgui.cpp = imgui\imgui.cpp
+		imgui\imgui.h = imgui\imgui.h
+		imgui\imgui_demo.cpp = imgui\imgui_demo.cpp
+		imgui\imgui_draw.cpp = imgui\imgui_draw.cpp
+		imgui\imgui_impl_dx11.cpp = imgui\imgui_impl_dx11.cpp
+		imgui\imgui_impl_dx11.h = imgui\imgui_impl_dx11.h
+		imgui\imgui_impl_opengl3.cpp = imgui\imgui_impl_opengl3.cpp
+		imgui\imgui_impl_opengl3.h = imgui\imgui_impl_opengl3.h
+		imgui\imgui_impl_win32.cpp = imgui\imgui_impl_win32.cpp
+		imgui\imgui_impl_win32.h = imgui\imgui_impl_win32.h
+		imgui\imgui_internal.h = imgui\imgui_internal.h
+		imgui\imgui_tables.cpp = imgui\imgui_tables.cpp
+		imgui\imgui_widgets.cpp = imgui\imgui_widgets.cpp
+		imgui\imstb_rectpack.h = imgui\imstb_rectpack.h
+		imgui\imstb_textedit.h = imgui\imstb_textedit.h
+		imgui\imstb_truetype.h = imgui\imstb_truetype.h
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Debug|x64.ActiveCfg = Debug|x64
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Debug|x64.Build.0 = Debug|x64
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Debug|x86.ActiveCfg = Debug|Win32
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Debug|x86.Build.0 = Debug|Win32
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Release|x64.ActiveCfg = Release|x64
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Release|x64.Build.0 = Release|x64
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Release|x86.ActiveCfg = Release|Win32
+		{FFCA512B-49FC-4FC8-8A73-C4F87D322FF2}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {922C35FD-091C-414C-98E6-09978BB42303}
+	EndGlobalSection
+EndGlobal
