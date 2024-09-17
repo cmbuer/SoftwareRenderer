@@ -133,6 +133,11 @@ void Keyboard::FlushKeyJustPressedStates() {
   keysJustPressed.reset();
 }
 
+
+void Keyboard::SetKey(unsigned char key) {
+	keystates[key] = true;
+}
+
 template<typename T>
 void Keyboard::TrimBuffer( std::queue<T>& buffer )
 {

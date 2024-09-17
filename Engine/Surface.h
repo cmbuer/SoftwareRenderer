@@ -120,8 +120,8 @@ public:
 	}
 
 	void makeRGBA() {
-		for (int y=0; y < height; y++)
-			for (int x = 0; x < width; x++) {
+		for (unsigned int y=0; y < height; y++)
+			for (unsigned int x = 0; x < width; x++) {
 				unsigned int ARGBcolor = pBuffer[y * pitch + x].dword;
 				pBuffer[y * pitch + x].dword = (((ARGBcolor & 0xF0000000) >> 24) | ARGBcolor << 8);
 				//((pBuffer[y * pitch + x].dword << 8) & 15);

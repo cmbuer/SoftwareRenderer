@@ -4,6 +4,9 @@
 #include "Surface.h"
 #include "S3Dtypes.h"
 
+#define Floor(x)	(int) floor(x)
+#define Ceil(x)		(int) ceil(x)
+
 namespace Software3D {
 
 	// forward declaration
@@ -81,35 +84,35 @@ namespace Software3D {
 			Vector3 pixelRGBufvf, pixelRGBucvf, pixelRGBufvc, pixelRGBucvc;			
 			Vector3 interp1, interp2, interpFinal;			// RGB vectors	
 
-			pixelRGBufvf.x = (texture->GetPixel(floor(u), floor(v))).GetR();
-			pixelRGBufvf.y = (texture->GetPixel(floor(u), floor(v))).GetG();
-			pixelRGBufvf.z = (texture->GetPixel(floor(u), floor(v))).GetB();
+			pixelRGBufvf.x = (texture->GetPixel(Floor(u), Floor(v))).GetR();
+			pixelRGBufvf.y = (texture->GetPixel(Floor(u), Floor(v))).GetG();
+			pixelRGBufvf.z = (texture->GetPixel(Floor(u), Floor(v))).GetB();
 
-			pixelRGBucvf.x = (texture->GetPixel(ceil(u), floor(v))).GetR();
-			pixelRGBucvf.y = (texture->GetPixel(ceil(u), floor(v))).GetG();
-			pixelRGBucvf.z = (texture->GetPixel(ceil(u), floor(v))).GetB();
+			pixelRGBucvf.x = (texture->GetPixel(Ceil(u), Floor(v))).GetR();
+			pixelRGBucvf.y = (texture->GetPixel(Ceil(u), Floor(v))).GetG();
+			pixelRGBucvf.z = (texture->GetPixel(Ceil(u), Floor(v))).GetB();
 			
-			Vector3 test1 = pixelRGBufvf * (ceil(u) - u);
-			Vector3 test2 = pixelRGBucvf * (u - floor(u));
+			Vector3 test1 = pixelRGBufvf * (Ceil(u) - u);
+			Vector3 test2 = pixelRGBucvf * (u - Floor(u));
 			interp1 = test1 + test2;
 
-			pixelRGBufvc.x = (texture->GetPixel(floor(u), ceil(v))).GetR();
-			pixelRGBufvc.y = (texture->GetPixel(floor(u), ceil(v))).GetG();
-			pixelRGBufvc.z = (texture->GetPixel(floor(u), ceil(v))).GetB();
+			pixelRGBufvc.x = (texture->GetPixel(Floor(u), Ceil(v))).GetR();
+			pixelRGBufvc.y = (texture->GetPixel(Floor(u), Ceil(v))).GetG();
+			pixelRGBufvc.z = (texture->GetPixel(Floor(u), Ceil(v))).GetB();
 
-			pixelRGBucvc.x = (texture->GetPixel(ceil(u), ceil(v))).GetR();
-			pixelRGBucvc.y = (texture->GetPixel(ceil(u), ceil(v))).GetG();
-			pixelRGBucvc.z = (texture->GetPixel(ceil(u), ceil(v))).GetB();
+			pixelRGBucvc.x = (texture->GetPixel(Ceil(u), Ceil(v))).GetR();
+			pixelRGBucvc.y = (texture->GetPixel(Ceil(u), Ceil(v))).GetG();
+			pixelRGBucvc.z = (texture->GetPixel(Ceil(u), Ceil(v))).GetB();
 
-			Vector3 test3 = pixelRGBufvc * (ceil(u) - u);
-			Vector3 test4 = pixelRGBucvc * (u - floor(u));
+			Vector3 test3 = pixelRGBufvc * (Ceil(u) - u);
+			Vector3 test4 = pixelRGBucvc * (u - Floor(u));
 			interp2 = test3 + test4;
 
-			Vector3 test5 = interp1 * ((ceil(v) - v));
-			Vector3 test6 = interp2 * (v - floor(v));
+			Vector3 test5 = interp1 * ((Ceil(v) - v));
+			Vector3 test6 = interp2 * (v - Floor(v));
 			interpFinal = test5 + test6;
 			
-			Color color = Color(round(interpFinal.x), round(interpFinal.y), round(interpFinal.z));
+			Color color = Color((unsigned int) round(interpFinal.x), (unsigned int) round(interpFinal.y), (unsigned int) round(interpFinal.z));
 
 			if (color.dword == Colors::Black.dword)
 				exit(666);

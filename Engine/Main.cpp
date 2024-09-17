@@ -41,6 +41,7 @@ int WINAPI wWinMain( HINSTANCE hInst,HINSTANCE,LPWSTR pArgs,INT )
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsLight();
 
+
 		MainWindow mainWindow( hInst,pArgs );		
 		try
 		{			
@@ -50,7 +51,7 @@ int WINAPI wWinMain( HINSTANCE hInst,HINSTANCE,LPWSTR pArgs,INT )
 			Hardware3D::Direct3Dpipeline d3dpipeline(mainWindow.hWnd);
 			Hardware3D::OpenGLpipeline openGLpipeline(mainWindow.hWnd);
 			RendererDemo renderDemo(&softwarePipeline, &d3dpipeline, &openGLpipeline);			
-			ImGui_ImplWin32_Init(mainWindow.hWnd);						
+			RendererDemo::instance = &renderDemo;
 
 			renderDemo.Run(mainWindow);
 		}

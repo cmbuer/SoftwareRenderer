@@ -37,8 +37,11 @@ namespace Software3D {
 	public:
 		D3DInterface() = default;
 		D3DInterface(HWND windowHandle);
-		void EndFrame();
 		void BeginFrame();
+		void Draw();
+		void EndFrame();
+		void EndFrameNew();
+		
 		void DrawLine(const Vector2& p1, const Vector2& p2, Color c)
 		{
 			DrawLine(p1.x, p1.y, p2.x, p2.y, c);

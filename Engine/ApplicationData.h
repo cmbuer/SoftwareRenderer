@@ -4,7 +4,7 @@
 
 enum class RenderMode { Software, Direct3D, OpenGL };
 
-static struct ApplicationData {
+struct ApplicationData {
 	static const int screenWidth = 1600;
 	static const int screenHeight = 1200;
 };

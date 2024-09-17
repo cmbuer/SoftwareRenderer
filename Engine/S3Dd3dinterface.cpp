@@ -2,6 +2,7 @@
 #include <array>
 #include "S3Dd3dInterface.h"
 #include "MenuSystem.h"
+#include "RendererDemo.h"
 
 #include "..\imgui\imgui_impl_win32.h"
 #include "..\imgui\imgui_impl_dx11.h"
@@ -261,17 +262,77 @@ namespace Software3D {
 		pImmediateContext->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
 		pImmediateContext->Draw(6u, 0u);
 
-		/*
+		
 		// Render IMGUI after buffer, before presentation
+		
+		ImGui_ImplDX11_Init(*pDevice.GetAddressOf(), *pImmediateContext.GetAddressOf());
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 		//ImGui::ShowDemoWindow();
-		MenuSystem::MainMenu();
+		//MenuSystem::MainMenu();
+		RendererDemo::OptionsMenu();
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());		
 		ImGui_ImplDX11_Shutdown();
-		*/
+		
+
+		// flip back/front buffers
+		if (FAILED(hr = pSwapChain->Present(1u, 0u)))
+		{
+			throw CHILI_GFX_EXCEPTION(hr, L"Presenting back buffer");
+		}
+
+
+	}
+
+	void D3DInterface::BeginFrame (  )
+	{
+		sysBuffer.Clear(Colors::Red);
+	}
+
+	void D3DInterface::Draw() {
+
+		HRESULT hr;
+
+		// lock and map the adapter memory for copying over the sysbuffer
+		if (FAILED(hr = pImmediateContext->Map(pSysBufferTexture.Get(), 0u,
+			D3D11_MAP_WRITE_DISCARD, 0u, &mappedSysBufferTexture)))
+		{
+			throw CHILI_GFX_EXCEPTION(hr, L"Mapping sysbuffer");
+		}
+		// perform the copy line-by-line
+		sysBuffer.Present(mappedSysBufferTexture.RowPitch,
+			reinterpret_cast<BYTE*>(mappedSysBufferTexture.pData));
+		// release the adapter memory
+		pImmediateContext->Unmap(pSysBufferTexture.Get(), 0u);
+
+		// render offscreen scene texture to back buffer
+		pImmediateContext->IASetInputLayout(pInputLayout.Get());
+		pImmediateContext->VSSetShader(pVertexShader.Get(), nullptr, 0u);
+		pImmediateContext->PSSetShader(pPixelShader.Get(), nullptr, 0u);
+		pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		const UINT stride = sizeof(FSQVertex);
+		const UINT offset = 0u;
+		pImmediateContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+		pImmediateContext->PSSetShaderResources(0u, 1u, pSysBufferTextureView.GetAddressOf());
+		pImmediateContext->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
+		pImmediateContext->Draw(6u, 0u);
+
+		// Render IMGUI after buffer, before presentation
+		ImGui_ImplDX11_Init(*pDevice.GetAddressOf(), *pImmediateContext.GetAddressOf());
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	void D3DInterface::EndFrameNew() {
+		
+		HRESULT hr;
+
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplDX11_Shutdown();
 
 		// flip back/front buffers
 		if (FAILED(hr = pSwapChain->Present(1u, 0u)))
@@ -280,10 +341,7 @@ namespace Software3D {
 		}
 	}
 
-	void D3DInterface::BeginFrame (  )
-	{
-		sysBuffer.Clear(Colors::Red);
-	}
+
 
 
 	//////////////////////////////////////////////////

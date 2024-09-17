@@ -217,6 +217,7 @@
     <ClCompile Include="Hardware3D.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MenuSystem.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="RendererDemo.cpp" />
@@ -225,6 +226,7 @@
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="S3DEffect.cpp" />
+    <ClCompile Include="S3DopenGLinterface.cpp" />
     <ClCompile Include="Surface.cpp" />
   </ItemGroup>
   <ItemGroup>

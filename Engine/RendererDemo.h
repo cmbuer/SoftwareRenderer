@@ -9,27 +9,32 @@ class RendererDemo {
 
 public:
 
-	struct viewport { int height; int width; };
-	RenderMode renderMode;
-	FrameTimer frameTimer;
+	RendererDemo(Software3D::Pipeline* s, Hardware3D::Direct3Dpipeline* d, Hardware3D::OpenGLpipeline* o);
+	void Run(MainWindow& window);
+	void DisplayMenu();
+	static void OptionsMenu();
+	static RendererDemo* instance;
+	
+private:
 
-	Pipeline* softwarePipeline;	
+	struct viewport { int height; int width; };
+	
+
+	bool direct3d;		//TEST
+
+	RenderMode renderMode;
+	RenderMode newRenderMode;
+	FrameTimer frameTimer;
+	Pipeline* softwarePipeline;
 	Hardware3D::Direct3Dpipeline* d3dpipeline;
 	Hardware3D::OpenGLpipeline* openGLpipeline;
 
 	std::vector<std::unique_ptr<DemoScene>> scenes;
 	std::vector<std::unique_ptr<DemoScene>>::iterator currentScene;
 
-	RendererDemo(Software3D::Pipeline* s, Hardware3D::Direct3Dpipeline* d, Hardware3D::OpenGLpipeline* o);
-	void RendererDemo::Run(MainWindow& window);
+	void DisplayHeader(MainWindow& mainWindow);
 	void Update(MainWindow& window);
 	void DrawScene(MainWindow& window);
-
-private:
-
-
-
-
 
 
 

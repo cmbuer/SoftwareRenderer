@@ -1,5 +1,6 @@
 #include <string.h>
 #include "MenuSystem.h"
+#include "RendererDemo.h"
 //#include "s3dpipeline.h"
 
 

@@ -1,4 +1,7 @@
 #include "Hardware3D.h"
+#include "RendererDemo.h"
+#include "..\imgui\imgui_impl_win32.h"
+#include "..\imgui\imgui_impl_dx11.h"
 
 namespace Hardware3D {
 
@@ -27,7 +30,7 @@ namespace Hardware3D {
 #endif
 
 			// for checking results of d3d functions
-			HRESULT hr;
+			//HRESULT hr;
 
 			// create device and front/back buffers, and swap chain and rendering context
 			//GFX_THROW_INFO
@@ -159,145 +162,7 @@ namespace Hardware3D {
 			deviceContext->Draw(3u, 0u);
 		}
 
-		void Direct3Dpipeline::DrawIndexedTextured(const IndexedList<TextureVertex>& vertices, const Surface& texture) {
-
-
-			// create D3D texture from texture
-			D3D11_TEXTURE2D_DESC textureDesc = {};
-			textureDesc.Width = texture.GetWidth();
-			textureDesc.Height = texture.GetHeight();
-			textureDesc.MipLevels = 1;
-			textureDesc.ArraySize = 1;
-			textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-			textureDesc.SampleDesc.Count = 1;
-			textureDesc.SampleDesc.Quality = 0;
-			textureDesc.Usage = D3D11_USAGE_DEFAULT;
-			textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-			textureDesc.CPUAccessFlags = 0;
-			textureDesc.MiscFlags = 0;
-			D3D11_SUBRESOURCE_DATA subData = {};
-			subData.pSysMem = texture.GetBufferPtrConst();			//?
-			subData.SysMemPitch = texture.GetWidth() * sizeof(Color);
-			Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
-			device->CreateTexture2D(&textureDesc, &subData, &pTexture);
-
-			// create a resource view on the texture
-			D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
-			viewDesc.Format = textureDesc.Format;
-			viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-			viewDesc.Texture2D.MostDetailedMip = 0;
-			viewDesc.Texture2D.MipLevels = 1;
-			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
-			device->CreateShaderResourceView(pTexture.Get(), &viewDesc, &textureView);
-
-			// bind texture view
-			deviceContext->PSSetShaderResources(0u, 1u, textureView.GetAddressOf());
-
-			// sampler state
-			D3D11_SAMPLER_DESC samplerDesc = {};
-			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-			Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
-			device->CreateSamplerState(&samplerDesc, &samplerState);
-
-			// bind sampler state
-			deviceContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
-
-
-			Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-
-
-			// create vertex buffer
-			D3D11_BUFFER_DESC vertexBufferDesc = {};
-			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.CPUAccessFlags = 0u;
-			vertexBufferDesc.MiscFlags = 0u;
-			vertexBufferDesc.ByteWidth = sizeof(TextureVertex) * vertices.vertices.size();
-			vertexBufferDesc.StructureByteStride = sizeof(TextureVertex);
-			D3D11_SUBRESOURCE_DATA vbSubData = {};
-			vbSubData.pSysMem = vertices.vertices.data();
-			device->CreateBuffer(&vertexBufferDesc, &vbSubData, &vertexBuffer);
-
-			// bind vertex buffer
-			const UINT stride = sizeof(TextureVertex);
-			const UINT offset = 0u;
-			deviceContext->IASetVertexBuffers(0u, 1u, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-			// create index buffer
-			Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
-			D3D11_BUFFER_DESC indexBufferDesc = {};
-			indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			indexBufferDesc.CPUAccessFlags = 0u;
-			indexBufferDesc.MiscFlags = 0u;
-			indexBufferDesc.ByteWidth = sizeof(int) * vertices.indices.size();
-			indexBufferDesc.StructureByteStride = sizeof(int);
-			D3D11_SUBRESOURCE_DATA ibSubData = {};
-			ibSubData.pSysMem = vertices.indices.data();
-			device->CreateBuffer(&indexBufferDesc, &ibSubData, &indexBuffer);
-
-			// bind index buffer
-			deviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-
-
-			// create vertex shader
-			Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-			Microsoft::WRL::ComPtr<ID3DBlob> blob;
-			D3DReadFileToBlob(L"TextureVertexShader.cso", &blob);
-			device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertexShader);
-
-			// bind vertex shader
-			deviceContext->VSSetShader(vertexShader.Get(), 0, 0);
-
-			// input layout for vertex shader (in this case, only contains a 2D position)
-			Microsoft::WRL::ComPtr<ID3D11InputLayout> vertexLayout;
-			const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
-				{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-				{"TexCoord", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-			};
-			device->CreateInputLayout(
-				vertexDesc, (UINT)std::size(vertexDesc),
-				blob->GetBufferPointer(),
-				blob->GetBufferSize(),
-				&vertexLayout
-			);
-
-			// bind vertex shader input layout
-			deviceContext->IASetInputLayout(vertexLayout.Get());
-
-
-			// create pixel shader
-			Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-			D3DReadFileToBlob(L"TexturePixelShader.cso", &blob);
-			device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixelShader);
-
-			// bind pixel shader
-			deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0u);
-
-			// bind render target
-			deviceContext->OMSetRenderTargets(1u, renderTargetView.GetAddressOf(), nullptr);
-
-			// set primitive topology to triangle list
-			deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-			//configure viewport
-			D3D11_VIEWPORT viewport;
-			viewport.Width = ApplicationData::screenWidth;
-			viewport.Height = ApplicationData::screenHeight;
-			viewport.MinDepth = 0;
-			viewport.MaxDepth = 1;
-			viewport.TopLeftX = 0;
-			viewport.TopLeftY = 0;
-			deviceContext->RSSetViewports(1u, &viewport);
-
-			//deviceContext->Draw(vertices.vertices.size(), 0u);
-			deviceContext->DrawIndexed((UINT)vertices.indices.size(), 0u, 0u);
-		}
-
+		
 
 		void Direct3Dpipeline::CreateResources(const IndexedList<TextureVertex>& vertices, const Surface& texture) {
 			CreateShaders();
@@ -340,7 +205,7 @@ namespace Hardware3D {
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			vertexBufferDesc.CPUAccessFlags = 0u;
 			vertexBufferDesc.MiscFlags = 0u;
-			vertexBufferDesc.ByteWidth = sizeof(TextureVertex) * vertices.vertices.size();
+			vertexBufferDesc.ByteWidth = (unsigned int) (sizeof(TextureVertex) * vertices.vertices.size());
 			vertexBufferDesc.StructureByteStride = sizeof(TextureVertex);
 			D3D11_SUBRESOURCE_DATA vbSubData = {};
 			vbSubData.pSysMem = vertices.vertices.data();
@@ -352,7 +217,7 @@ namespace Hardware3D {
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 			indexBufferDesc.CPUAccessFlags = 0u;
 			indexBufferDesc.MiscFlags = 0u;
-			indexBufferDesc.ByteWidth = sizeof(int) * vertices.indices.size();
+			indexBufferDesc.ByteWidth = (unsigned int)(sizeof(int) * vertices.indices.size());
 			indexBufferDesc.StructureByteStride = sizeof(int);
 			D3D11_SUBRESOURCE_DATA ibSubData = {};
 			ibSubData.pSysMem = vertices.indices.data();
@@ -431,6 +296,16 @@ namespace Hardware3D {
 			deviceContext->RSSetViewports(1u, &viewport);
 
 			deviceContext->DrawIndexed((UINT)vertices.indices.size(), 0u, 0u);
+
+			ImGui_ImplDX11_Init(*device.GetAddressOf(), *deviceContext.GetAddressOf());
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			RendererDemo::OptionsMenu();
+			ImGui::Render();
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			ImGui_ImplDX11_Shutdown();
+
 		}
 
 
@@ -621,7 +496,6 @@ namespace Hardware3D {
 
 		void OpenGLpipeline::TestDrawFrameTextureIndexed(IndexedList<TextureVertex> inVertices, const Surface& texture, const Matrix4x4& transformation) {
 
-
 			GLuint textureID;
 			glGenTextures(1, &textureID);
 			glBindTexture(GL_TEXTURE_2D, textureID);
@@ -662,29 +536,23 @@ namespace Hardware3D {
 			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (const void*)(sizeof(inVertices.vertices[0].position)));
 			glEnableVertexAttribArray(1);
 
-
-
 			unsigned int indexBufferID;
 			glGenBuffers(1, &indexBufferID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, inVertices.indices.size() * sizeof(unsigned int), inVertices.indices.data(), GL_STATIC_DRAW);
 
-
 			glClear(GL_COLOR_BUFFER_BIT);
-			glDrawElements(GL_TRIANGLES, inVertices.indices.size(), GL_UNSIGNED_INT, nullptr);
-
-			/*
+			glDrawElements(GL_TRIANGLES, (GLsizei) inVertices.indices.size(), GL_UNSIGNED_INT, nullptr);
+			
+			ImGui_ImplOpenGL3_Init((char*)glGetString(GL_NUM_SHADING_LANGUAGE_VERSIONS));
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
-
-			ImGui::ShowDemoWindow();
+			ImGui::NewFrame();					
+			RendererDemo::OptionsMenu();
 			ImGui::Render();
-
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			//ImGui_ImplOpenGL3_Shutdown();
-			*/
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());			
 			SwapBuffers(ourWindowHandleToDeviceContext);
+			ImGui_ImplOpenGL3_Shutdown();
 
 			// unbind texture
 			glBindTexture(GL_TEXTURE_2D, 0);

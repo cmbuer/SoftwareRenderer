@@ -19,8 +19,6 @@ namespace Software3D {
 
 namespace MenuSystem {
 
-	
-
 	void Startup();
 	void InitializeOpenGL();
 	void DisplayWindowHeader(HWND hwnd, FrameTimer timer, RenderMode renderMode, Software3D::Pipeline* softPipe);

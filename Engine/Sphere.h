@@ -25,10 +25,10 @@ public:
 		}
 
 		// add the cap vertices
-		const auto iNorthPole = vertices.size();
+		const int iNorthPole = (int) vertices.size();
 		vertices.emplace_back();
 		vertices.back().position = base;
-		const auto iSouthPole = vertices.size();
+		const int iSouthPole = (int) vertices.size();
 		vertices.emplace_back();
 		vertices.back().position = -base;
 
@@ -101,11 +101,11 @@ public:
 		}
 
 		// add the cap vertices
-		const auto iNorthPole = vertices.size();
+		const int iNorthPole = (int) vertices.size();
 		vertices.emplace_back();
 		vertices.back().position = base;
 		vertices.back().color = color;
-		const auto iSouthPole = vertices.size();
+		const int iSouthPole = (int) vertices.size();
 		vertices.emplace_back();
 		vertices.back().position = -base;
 		vertices.back().color = color;

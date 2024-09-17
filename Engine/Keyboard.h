@@ -87,7 +87,8 @@ public:
 	void DisableAutorepeat();
 	bool AutorepeatIsEnabled() const;
 	void FlushKeyStates();
-  void FlushKeyJustPressedStates();
+	void FlushKeyJustPressedStates();
+	void SetKey(unsigned char key);
 private:
 	void OnKeyPressed( unsigned char keycode );
 	void OnKeyReleased( unsigned char keycode );
