@@ -25,6 +25,8 @@ While the software renderer is the core of the project, another important design
 
 On the back end, the software renderer itself writes to a buffer that is then flipped to ether Direct3D or OpenGL for rendering (rather than, say, blitting via Win32).  Because by its very nature the software render does not operate at a high frame rate--it _is_ a simulation/model of a modern hardware pipeline rather than an attempt at a production software rendering layer--this helps keep the floor a little higher.  It is thus the case that there are four distinct rendering states in the application: Software via D3D (the default), Software via OGL, and Direct3D and OpenGL themselves.
 
+The renderer can be controlled either via imgui or keyboard commands.
+
 <br />
 
 ## Keyboard Control Guide
@@ -37,19 +39,19 @@ On the back end, the software renderer itself writes to a buffer that is then fl
 
 3 - OpenGL render mode
 
-4 - Sets software renderer backend to Direct3D
+4 - [currently inactive]
 
-5 - Sets software renderer backend to OpenGL
+5 - Clockwise winding
 
-6 - Clockwise winding
+6 - Counter-clockwise winding
 
-7 - Counter-clockwise winding
+7 - No Face Culling (support in software under construction)
 
 8 - Back face culling
 
 9 - Front face culling
 
-0 - Front and back face culling
+0 - Front and back face culling (not supported by D3D)
 
 Right Arrow - Next Scene
 

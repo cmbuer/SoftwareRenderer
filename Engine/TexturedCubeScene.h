@@ -24,11 +24,11 @@ struct TexturedCubeScene : DemoScene {
 	
 
 	TexturedCubeScene::TexturedCubeScene() {
-		name = "Textured Cube SCene";
+		name = "Textured Cube Scene";
 	}
 
 	TexturedCubeScene::TexturedCubeScene(Software3D::Pipeline* s, Hardware3D::Direct3Dpipeline* d, Hardware3D::OpenGLpipeline* o) {
-		name = "Textured Cube SCene";
+		name = "Textured Cube Scene";
 
 		textureEffect.pipeline = softwarePipeline = s;
 		direct3Dpipeline = d;
@@ -71,7 +71,7 @@ struct TexturedCubeScene : DemoScene {
 				softwarePipeline->EndFrame();
 			}
 			if (softwarePipeline->hwInterface == Pipeline::HardwareInterface::OpenGL) {
-				openGLpipeline->TestDrawFrameTexture(softwarePipeline->hardwarePipeline->sysBuffer);
+				openGLpipeline->DrawFrameTexture(softwarePipeline->d3dpipeline->sysBuffer);
 			}
 		}
 		else if (renderMode == RenderMode::Direct3D) {
@@ -104,7 +104,7 @@ struct TexturedCubeScene : DemoScene {
 			Matrix4x4 transform4gl = rotation4 * translation4gl * projectiongl;
 			transform4gl = !transform4gl;
 
-			openGLpipeline->TestDrawFrameTextureIndexed(cubeList, cube, transform4gl);
+			openGLpipeline->DrawFrameTextureIndexed(cubeList, cube, transform4gl);
 		}	
 	}
 };

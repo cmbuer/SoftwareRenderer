@@ -13,18 +13,16 @@ namespace Software3D {
 
 	public:
 
-
 		enum class HardwareInterface { Direct3D, OpenGL };
-		HardwareInterface hwInterface = HardwareInterface::Direct3D;
+		HardwareInterface hwInterface;
 
 		enum class TriangleType { FlatTop, FlatBottom };
 
 		enum class WindingDirection { Clockwise = 1, CounterClockwise = -1 };
-		WindingDirection windingDirection = WindingDirection::Clockwise;
+		WindingDirection windingDirection;
 
-		enum class CullingState { Back = 1, Front = -1, FrontAndBack = 0 };
-		CullingState cullingState = CullingState::Back;
-
+		enum class CullingState { Back = 1, Front = -1, FrontAndBack = 0, None = 2 };
+		CullingState cullingState;
 
 		enum class Rasterizer { Scanline, EdgeFunction };
 		Rasterizer rasterizer = Rasterizer::Scanline;
@@ -70,35 +68,40 @@ namespace Software3D {
 		Matrix3x3 rotation;
 		Vector3 translation;
 
-		D3DInterface* hardwarePipeline;
+		D3DInterface* d3dpipeline;
 		OpenGLinterface* openglpipeline;
 
 		Pipeline() = default;
 
 		Pipeline(D3DInterface* hw) :
-			depthBuffer(hardwarePipeline->ScreenWidth, hardwarePipeline->ScreenHeight)
+			depthBuffer(d3dpipeline->ScreenWidth, d3dpipeline->ScreenHeight)
 		{
-			hardwarePipeline = hw;
+			d3dpipeline = hw;
+			cullingState = CullingState::Back;
+			windingDirection = WindingDirection::Clockwise;
+			hwInterface = HardwareInterface::Direct3D;
 		}
 
 		Pipeline(D3DInterface* hw, OpenGLinterface* og) :
-			depthBuffer(hardwarePipeline->ScreenWidth, hardwarePipeline->ScreenHeight)
+			depthBuffer(d3dpipeline->ScreenWidth, d3dpipeline->ScreenHeight)
 		{
-			hardwarePipeline = hw;
+			d3dpipeline = hw;
 			openglpipeline = og;
+			cullingState = CullingState::Back;
+			windingDirection = WindingDirection::Clockwise;
+			hwInterface = HardwareInterface::Direct3D;
 		}
 		
 		void BeginFrame() {
 			depthBuffer.Clear();
-			hardwarePipeline->BeginFrame();
-			//openglpipeline->buffer.Clear(Colors::Red);
+			d3dpipeline->BeginFrame();			
 		}
 
 		void EndFrame() {
 			if (hwInterface == HardwareInterface::Direct3D)
-				hardwarePipeline->EndFrame();
+				d3dpipeline->EndFrame();
 			else if (hwInterface == HardwareInterface::OpenGL) {				
-				openglpipeline->DrawLegacy();
+				//openglpipeline->DrawLegacy();
 			}
 		}
 
@@ -126,8 +129,8 @@ namespace Software3D {
 			outVertex.position = clipSpacePosition;			
 			outVertex *= worldZinverse;
 			outVertex.position.w = worldZinverse;
-			outVertex.position.x = (outVertex.position.x + 1.0f) * hardwarePipeline->ScreenWidth / 2.0f;				// x and y are converted fully to screen space here
-			outVertex.position.y = (-outVertex.position.y + 1.0f) * hardwarePipeline->ScreenHeight / 2.0f;
+			outVertex.position.x = (outVertex.position.x + 1.0f) * d3dpipeline->ScreenWidth / 2.0f;				// x and y are converted fully to screen space here
+			outVertex.position.y = (-outVertex.position.y + 1.0f) * d3dpipeline->ScreenHeight / 2.0f;
 			return outVertex;
 		}
 
@@ -158,17 +161,25 @@ namespace Software3D {
 
 			// back face culling: if surface normal of triangle points in the same general
 			// direction as the viewport normal (dot product >= 0), we cull
-			triangles.cullFlags.resize(triangles.indices.size() / 3, false);
-			for (int i = 0; i < triangles.indices.size() / 3; i++) {
+			triangles.cullFlags.resize(triangles.indices.size() / 3, false);			
 
-				int vdx0 = triangles.indices[3 * i];
-				int vdx1 = triangles.indices[3 * i + 1];
-				int vdx2 = triangles.indices[3 * i + 2];
-				triangles.cullFlags[i] = (int)cullingState * (int)windingDirection *( (triangles.vertices[vdx1] - triangles.vertices[vdx0]).position.Cross((triangles.vertices[vdx2] - triangles.vertices[vdx0]).position) * triangles.vertices[vdx0].position) >= 0.0f;
-
+			// TEST
+			if (cullingState == CullingState::None) {
+				std::string("test");
 			}
 
-						
+			if (cullingState != CullingState::None) {
+				for (int i = 0; i < triangles.indices.size() / 3; i++) {
+
+					int vdx0 = triangles.indices[3 * i];
+					int vdx1 = triangles.indices[3 * i + 1];
+					int vdx2 = triangles.indices[3 * i + 2];
+					triangles.cullFlags[i] = (int)cullingState * (int)windingDirection
+						* ((triangles.vertices[vdx1] - triangles.vertices[vdx0]).position.Cross((triangles.vertices[vdx2] - triangles.vertices[vdx0]).position) * triangles.vertices[vdx0].position) >= 0.0f;
+
+				}
+			}
+									
 			for (int i = 0; i < triangles.indices.size() / 3; i++) {
 
 				if (triangles.cullFlags[i])
@@ -253,7 +264,8 @@ namespace Software3D {
 					v[1] = (v[2] * alphaV1V2) + v[1] * (1 - alphaV1V2);
 
 					if (rasterizer == Rasterizer::Scanline)
-						threads.push_back(std::thread(&Pipeline::DrawTriangleSimple<VertexOutType, EffectType>, this, NDCtransform4(v[0], v[0].position), NDCtransform4(v[1], v[1].position), NDCtransform4(v[2], v[2].position), effect));					
+						threads.push_back(std::thread(&Pipeline::DrawTriangleSimple<VertexOutType, EffectType>, this, NDCtransform4(v[0], v[0].position), NDCtransform4(v[1], v[1].position), NDCtransform4(v[2], v[2].position), effect));
+						//DrawTriangleSimple(NDCtransform4(v[0], v[0].position), NDCtransform4(v[1], v[1].position), NDCtransform4(v[2], v[2].position), effect);
 				}
 				else if (clipCount == 1) {						// triangle must be split/tesselated
 
@@ -268,11 +280,14 @@ namespace Software3D {
 					if (rasterizer == Rasterizer::Scanline) {
 						threads.push_back(std::thread(&Pipeline::DrawTriangleSimple<VertexOutType, EffectType>, this, NDCtransform4(newVertex0, newVertex0.position), NDCtransform4(v[1], v[1].position), NDCtransform4(v[2], v[2].position), effect));
 						threads.push_back(std::thread(&Pipeline::DrawTriangleSimple<VertexOutType, EffectType>, this, NDCtransform4(newVertex1, newVertex1.position), NDCtransform4(newVertex0, newVertex0.position), NDCtransform4(v[2], v[2].position), effect));
+						//DrawTriangleSimple(NDCtransform4(newVertex0, newVertex0.position), NDCtransform4(v[1], v[1].position), NDCtransform4(v[2], v[2].position), effect);
+						//DrawTriangleSimple(NDCtransform4(newVertex1, newVertex1.position), NDCtransform4(newVertex0, newVertex0.position), NDCtransform4(v[2], v[2].position), effect);
 					}
 				}
 				else // no clipping, triangle is drawn in full
 				{					
 					threads.push_back(std::thread(&Pipeline::DrawTriangleSimple<VertexOutType, EffectType>, this, NDCtransform4(gsOutTri.vertexA, clipA), NDCtransform4(gsOutTri.vertexB, clipB), NDCtransform4(gsOutTri.vertexC, clipC), effect));
+					//DrawTriangleSimple(NDCtransform4(gsOutTri.vertexA, clipA), NDCtransform4(gsOutTri.vertexB, clipB), NDCtransform4(gsOutTri.vertexC, clipC), effect);
 				}
 			}
 			for (int i = 0; i < threads.size(); i++) {
@@ -343,7 +358,7 @@ namespace Software3D {
 
 			// calculate the start and end scanlines (integer y values)
 			int yStart = std::max((int)ceil(ipVertexA.position.y - pixelCenter), 0);												// top part of top left rule
-			int yEnd = std::min((int)ceil(ipVertexC.position.y - pixelCenter), (int)hardwarePipeline->ScreenHeight - 1);
+			int yEnd = std::min((int)ceil(ipVertexC.position.y - pixelCenter), (int)d3dpipeline->ScreenHeight - 1);
 
 			// prestep interpolants along both sides (slope, attributes)
 			ipEdgeLeft += ipDeltaLeft * (float(yStart) + pixelCenter - ipVertexA.position.y);
@@ -357,7 +372,7 @@ namespace Software3D {
 
 				// calculate start and end pixels (integer x values)
 				int xStart = std::max((int)ceil(ipEdgeLeft.position.x - pixelCenter), 0);										// left part of top-left rule
-				int xEnd = std::min((int)ceil(ipEdgeRight.position.x - pixelCenter), (int)hardwarePipeline->ScreenWidth - 1);
+				int xEnd = std::min((int)ceil(ipEdgeRight.position.x - pixelCenter), (int)d3dpipeline->ScreenWidth - 1);
 
 				// create scanline interpolant starting point
 				VertexType ipScanlinePosition = ipEdgeLeft;
@@ -372,7 +387,7 @@ namespace Software3D {
 					if (depthBuffer.TestAndSet(x, y, ipScanlinePosition.position.z)) {
 						float w = 1.0f / ipScanlinePosition.position.w;	// recover z
 						VertexType corrected = ipScanlinePosition * w;												
-						hardwarePipeline->PutPixel(x, y, effect->PixelShaderFn(corrected));						
+						d3dpipeline->PutPixel(x, y, effect->PixelShaderFn(corrected));						
 					}
 					ipScanlinePosition += ipDeltaScanline; // update position within scanline
 				}

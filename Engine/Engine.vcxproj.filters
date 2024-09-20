@@ -75,9 +75,6 @@
     <ClInclude Include="ApplicationData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MenuSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="S3DopenGLinterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,9 +182,6 @@
     <ClCompile Include="S3DEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MenuSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\imgui\imgui_demo.cpp">
       <Filter>Source Files\IMGUI</Filter>
     </ClCompile>
@@ -232,9 +226,6 @@
     </ClCompile>
     <ClCompile Include="GDIPlusManager.cpp">
       <Filter>Source Files\Modified Chili Framework</Filter>
-    </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="S3DopenGLinterface.cpp">
       <Filter>Source Files</Filter>

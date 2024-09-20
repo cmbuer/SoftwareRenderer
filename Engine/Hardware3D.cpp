@@ -52,6 +52,24 @@ namespace Hardware3D {
 			Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer;
 			(swapChain->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));	//GFX_THROW_INFO
 			(device->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &renderTargetView));	//GFX_THROW_INFO
+
+			// default rasterizer description
+			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+			rasterizerDesc.CullMode = D3D11_CULL_BACK;
+			rasterizerDesc.DepthClipEnable = true;
+
+		}
+
+		void Direct3Dpipeline::SetCullState(D3D11_CULL_MODE newCullMode) {
+			rasterizerDesc.CullMode = newCullMode;
+			device->CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
+			deviceContext->RSSetState(rasterizerState.Get());
+		}
+
+		void Direct3Dpipeline::SetWindingDirection(WindingDirection newDirection) {
+			rasterizerDesc.FrontCounterClockwise = (bool) newDirection;
+			device->CreateRasterizerState(&rasterizerDesc, rasterizerState.GetAddressOf());
+			deviceContext->RSSetState(rasterizerState.Get());
 		}
 
 		void Direct3Dpipeline::BeginFrame() { ClearBuffer(0, 0, 0); }
@@ -80,89 +98,6 @@ namespace Hardware3D {
 
 		}
 
-		void Direct3Dpipeline::DrawTestTriangle() {
-
-			Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-
-			struct Vertex3D { float x, y, z; };
-
-			const Vertex3D testVertices[] = {
-				{ 0.5f,  0.5f, 0.5f},
-				{ 0.5f, -0.5f, 0.5f},
-				{-0.5f, -0.5f, 0.5f},
-			};
-
-			// create vertex buffer
-			D3D11_BUFFER_DESC vertexBufferDesc = {};
-			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.CPUAccessFlags = 0u;
-			vertexBufferDesc.MiscFlags = 0u;
-			vertexBufferDesc.ByteWidth = sizeof(testVertices);
-			vertexBufferDesc.StructureByteStride = sizeof(Vertex3D);
-			D3D11_SUBRESOURCE_DATA subData = {};
-			subData.pSysMem = testVertices;
-			device->CreateBuffer(&vertexBufferDesc, &subData, &vertexBuffer);
-
-			// bind vertex buffer
-			const UINT stride = sizeof(Vertex3D);
-			const UINT offset = 0u;
-			deviceContext->IASetVertexBuffers(0u, 1u, vertexBuffer.GetAddressOf(), &stride, &offset);
-
-
-			// create vertex shader
-			Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-			Microsoft::WRL::ComPtr<ID3DBlob> blob;
-			D3DReadFileToBlob(L"TestVertexShader.cso", &blob);
-			device->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertexShader);
-
-			// bind vertex shader
-			deviceContext->VSSetShader(vertexShader.Get(), 0, 0);
-
-			// input layout for vertex shader (in this case, only contains a 2D position)
-			Microsoft::WRL::ComPtr<ID3D11InputLayout> vertexLayout;
-			const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
-				{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			};
-			device->CreateInputLayout(
-				vertexDesc, (UINT)std::size(vertexDesc),
-				blob->GetBufferPointer(),
-				blob->GetBufferSize(),
-				&vertexLayout
-			);
-
-			// bind vertex shader input layout
-			deviceContext->IASetInputLayout(vertexLayout.Get());
-
-
-			// create pixel shader
-			Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-			D3DReadFileToBlob(L"TestPixelShader.cso", &blob);
-			device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixelShader);
-
-			// bind pixel shader
-			deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0u);
-
-			// bind render target
-			deviceContext->OMSetRenderTargets(1u, renderTargetView.GetAddressOf(), nullptr);
-
-			// set primitive topology to triangle list
-			deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-			//configure viewport
-			D3D11_VIEWPORT viewport;
-			viewport.Width = ApplicationData::screenWidth;
-			viewport.Height = ApplicationData::screenHeight;
-			viewport.MinDepth = 0;
-			viewport.MaxDepth = 1;
-			viewport.TopLeftX = 0;
-			viewport.TopLeftY = 0;
-			deviceContext->RSSetViewports(1u, &viewport);
-
-			deviceContext->Draw(3u, 0u);
-		}
-
-		
 
 		void Direct3Dpipeline::CreateResources(const IndexedList<TextureVertex>& vertices, const Surface& texture) {
 			CreateShaders();
@@ -355,61 +290,9 @@ namespace Hardware3D {
 			glEnable(GL_CULL_FACE);
 		}
 
-		void OpenGLpipeline::TestDrawFrameLegacy() {
-
-			glClear(GL_COLOR_BUFFER_BIT);
-			/*{ 0.5f,  0.5f, 0.5f},
-				{ 0.5f, -0.5f, 0.5f},
-				{-0.5f, -0.5f, 0.5f},*/
-			glBegin(GL_TRIANGLES);
-			glVertex2f(-0.5f, -0.5f);
-			glVertex2f(0.0f, 0.5f);
-			glVertex2f(0.5f, -0.5f);
-			glEnd();
-			SwapBuffers(ourWindowHandleToDeviceContext);
-		}
-
-		void OpenGLpipeline::TestDrawFrame() {
 
 
-			std::string vertexShaderSource = GetShaderSource("GLtestVertexShader.glsl");
-			std::string fragmentShaderSource = GetShaderSource("GLtestFragmentShader.glsl");
-
-			GLuint shaders = CreateShader(vertexShaderSource, fragmentShaderSource);
-			glUseProgram(shaders);
-
-
-			float vertexPositions[] = { -0.5f, -0.5f,
-										 0.0f, 0.5f,
-										 0.5f, -0.5f };
-
-			unsigned int indices[] = {
-										0, 1, 2,
-										2, 3, 0
-			};
-
-			unsigned int vertexBufferID;
-			glGenBuffers(1, &vertexBufferID);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-
-			// only one attribute (position), so only one call
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-			glEnableVertexAttribArray(0);
-
-
-			unsigned int indexBufferID;
-			glGenBuffers(1, &indexBufferID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-			glClear(GL_COLOR_BUFFER_BIT);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-			SwapBuffers(ourWindowHandleToDeviceContext);
-		}
-
-		void OpenGLpipeline::TestDrawFrameTexture(Surface& texture) {
+		void OpenGLpipeline::DrawFrameTexture(Surface& texture) {
 
 			// RGBA converstion test
 			texture.makeRGBA();
@@ -475,26 +358,24 @@ namespace Hardware3D {
 
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-			/*
+			
+			ImGui_ImplOpenGL3_Init((char*)glGetString(GL_NUM_SHADING_LANGUAGE_VERSIONS));
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-
-			ImGui::ShowDemoWindow();
+			RendererDemo::OptionsMenu();
 			ImGui::Render();
-
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			ImGui_ImplOpenGL3_Shutdown();
-			*/
-
 			SwapBuffers(ourWindowHandleToDeviceContext);
+			ImGui_ImplOpenGL3_Shutdown();
 
 			// unbind texture
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glDeleteTextures(1, &textureID);
 		}
 
-		void OpenGLpipeline::TestDrawFrameTextureIndexed(IndexedList<TextureVertex> inVertices, const Surface& texture, const Matrix4x4& transformation) {
+		void OpenGLpipeline::DrawFrameTextureIndexed(IndexedList<TextureVertex> inVertices, const Surface& texture, const Matrix4x4& transformation) {
+
 
 			GLuint textureID;
 			glGenTextures(1, &textureID);

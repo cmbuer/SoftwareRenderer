@@ -190,7 +190,6 @@
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Materials.h" />
     <ClInclude Include="Math3D.h" />
-    <ClInclude Include="MenuSystem.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RendererDemo.h" />
@@ -217,8 +216,6 @@
     <ClCompile Include="Hardware3D.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MainWindow.cpp" />
-    <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="MenuSystem.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="RendererDemo.cpp" />
     <ClCompile Include="S3Dd3dinterface.cpp" />

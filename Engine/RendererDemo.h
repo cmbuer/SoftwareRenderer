@@ -24,13 +24,16 @@ private:
 
 	RenderMode renderMode;
 	RenderMode newRenderMode;
+	Pipeline::CullingState newCullingState;
+	Pipeline::WindingDirection newWindingDirection;
+	Pipeline::HardwareInterface newHWinterface;
 	FrameTimer frameTimer;
 	Pipeline* softwarePipeline;
 	Hardware3D::Direct3Dpipeline* d3dpipeline;
 	Hardware3D::OpenGLpipeline* openGLpipeline;
-
 	std::vector<std::unique_ptr<DemoScene>> scenes;
 	std::vector<std::unique_ptr<DemoScene>>::iterator currentScene;
+	std::vector<std::unique_ptr<DemoScene>>::iterator newScene;
 
 	void DisplayHeader(MainWindow& mainWindow);
 	void Update(MainWindow& window);

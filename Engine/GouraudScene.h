@@ -80,7 +80,7 @@ struct GouraudScene : DemoScene
 			softwarePipeline->EndFrame();
 		}
 		if (softwarePipeline->hwInterface == Pipeline::HardwareInterface::OpenGL) {
-			openGLpipeline->TestDrawFrameTexture(softwarePipeline->hardwarePipeline->sysBuffer);
+			openGLpipeline->DrawFrameTexture(softwarePipeline->d3dpipeline->sysBuffer);
 		}
 	}
 };

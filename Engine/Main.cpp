@@ -13,7 +13,6 @@
 #include "GouraudEffect.h"
 #include "Sphere.h"
 #include "Hardware3D.h"
-#include "MenuSystem.h"
 #include "TexturedCubeScene.h"
 #include "SolidColorSphereScene.h"
 #include "S3DopenGLinterface.h"

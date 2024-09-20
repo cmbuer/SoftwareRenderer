@@ -29,6 +29,24 @@ namespace Hardware3D {
 	class Direct3Dpipeline {
 	public:
 
+		enum class WindingDirection { Clockwise = false, Counterclockwise = true };
+
+		Direct3Dpipeline(HWND windowHandle);		
+		void BeginFrame();
+		void EndFrame();
+		void ClearBuffer(float r, float g, float b);		
+		void BindConstantBuffer(DirectX::XMMATRIX bufferData);
+		void SetWindingDirection(WindingDirection newDirection);
+		void SetCullState(D3D11_CULL_MODE newCullMode);
+		void CreateResources(const IndexedList<TextureVertex>& vertices, const Surface& texture);
+		void CreateTexture(const Surface& texture);
+		void CreateShaders();
+		void CreateBuffers(const IndexedList<TextureVertex>& vertices);
+		void Bind();
+		void Draw(const IndexedList<TextureVertex>& vertices, const Surface& texture);
+
+	private:
+
 		DirectX::XMMATRIX projection;
 		DirectX::XMMATRIX camera;
 
@@ -45,22 +63,9 @@ namespace Hardware3D {
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> currentPixelShader;
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> currentVertexLayout;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> currentTexture;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 
-		Direct3Dpipeline(HWND windowHandle);
-		
-		void BeginFrame();
-		void EndFrame();
-		void ClearBuffer(float r, float g, float b);		
-		void BindConstantBuffer(DirectX::XMMATRIX bufferData);
-		void DrawTestTriangle(); 
-		void DrawIndexedTextured(const IndexedList<TextureVertex>& vertices, const Surface& texture); 
-
-		void CreateResources(const IndexedList<TextureVertex>& vertices, const Surface& texture);
-		void CreateTexture(const Surface& texture);
-		void CreateShaders();
-		void CreateBuffers(const IndexedList<TextureVertex>& vertices);
-		void Bind();
-		void Draw(const IndexedList<TextureVertex>& vertices, const Surface& texture);
 	};
 
 
@@ -71,8 +76,6 @@ namespace Hardware3D {
 
 
 	public:
-
-		HDC ourWindowHandleToDeviceContext;
 
 		OpenGLpipeline(HWND windowHandle); 
 
@@ -127,10 +130,11 @@ namespace Hardware3D {
 			return program;
 		}
 
-		void TestDrawFrameLegacy();
-		void TestDrawFrame();
-		void TestDrawFrameTexture(Surface& texture); 
-		void TestDrawFrameTextureIndexed(IndexedList<TextureVertex> inVertices, const Surface& texture, const Matrix4x4& transformation);
+		void DrawFrameTexture(Surface& texture); 
+		void DrawFrameTextureIndexed(IndexedList<TextureVertex> inVertices, const Surface& texture, const Matrix4x4& transformation);
+
+	private:
+		HDC ourWindowHandleToDeviceContext;
 	};
 
 }

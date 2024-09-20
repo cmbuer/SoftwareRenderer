@@ -1,0 +1,14 @@
+A number of changes were made on this update:
+
+* Merging/cleanup of multiple-pipeline parameter changes in RenderDemo update cycle
+
+* Imgui interface greatly expanded and keyboard interface modified
+
+* Ability to control rendering pipelines added to imgui menu
+
+* Ability to adjust winding direction and culling state added to D3D pipeline
+
+* Culling state of "None" added as an option to the RenderDemo interface
+
+* Misc. pipeline refactoring and cleanup
+
